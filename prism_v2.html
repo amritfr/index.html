@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prism by Claivo — Know what every RTO is really costing you</title>
+<meta name="description" content="The RTO decision engine for Indian D2C brands. Real rupee impact, not risk scores.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,700&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:#05040a;
+  --bg2:#08070f;
+  --surface:#0e0c18;
+  --surface2:#141220;
+  --gold:#f0a500;
+  --gold2:#ffc233;
+  --saffron:#ff6b1a;
+  --cream:#f5ede0;
+  --cream2:#c9bfad;
+  --muted:#5a5370;
+  --border:rgba(240,165,0,0.18);
+  --border2:rgba(240,165,0,0.07);
+  --green:#1db87a;
+  --red:#e03e3e;
+  --purple:#7c5cbf;
+  --glow:rgba(240,165,0,0.12);
+}
+
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--cream);font-family:'DM Sans', sans-serif;font-size:16px;line-height:1.6;overflow-x:hidden;cursor:none}
+
+/* CUSTOM CURSOR */
+#cursor{position:fixed;width:8px;height:8px;background:var(--gold);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:transform 0.1s,width 0.2s,height 0.2s,opacity 0.2s;mix-blend-mode:difference}
+#cursor-ring{position:fixed;width:32px;height:32px;border:1px solid rgba(240,165,0,0.5);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:all 0.15s ease;mix-blend-mode:normal}
+body:hover #cursor{opacity:1}
+
+/* CANVAS BACKGROUND */
+#bg-canvas{position:fixed;inset:0;z-index:0;opacity:0.5}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:200;padding:0 56px;height:68px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border2);background:rgba(5,4,10,0.7);backdrop-filter:blur(24px)}
+
+.logo{display:flex;align-items:center;gap:12px;text-decoration:none}
+.logo-prism{width:32px;height:32px}
+.logo-name{font-family:'Playfair Display',sans-serif;font-size:15px;font-weight:700;color:var(--cream);letter-spacing:0.04em}
+.logo-name span{color:var(--gold)}
+
+.nav-center{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.03);border:1px solid var(--border2);border-radius:100px;padding:5px 8px}
+.nav-dot{width:7px;height:7px;border-radius:50%;background:var(--saffron);animation:blink 2.5s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+.nav-status{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;padding:0 8px}
+
+.nav-cta{font-family:'Playfair Display',sans-serif;font-size:13px;font-weight:700;color:var(--bg);background:var(--gold);padding:9px 22px;border-radius:4px;text-decoration:none;letter-spacing:0.02em;transition:all 0.2s;box-shadow:0 0 20px rgba(240,165,0,0.3)}
+.nav-cta:hover{background:var(--gold2);box-shadow:0 0 30px rgba(240,165,0,0.5);transform:translateY(-1px)}
+
+/* HERO */
+.hero{min-height:100vh;display:grid;grid-template-columns:1fr 1fr;gap:0;align-items:center;padding:100px 56px 60px;position:relative;z-index:1}
+
+.hero-left{max-width:580px}
+
+.hero-eyebrow{display:inline-flex;align-items:center;gap:10px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);background:rgba(240,165,0,0.08);border:1px solid var(--border);padding:7px 16px;border-radius:100px;margin-bottom:40px;opacity:0;animation:slideIn 0.8s 0.1s forwards}
+
+.hero h1{font-family:'Playfair Display',sans-serif;font-size:clamp(44px,5vw,72px);font-weight:800;line-height:1.04;letter-spacing:-0.04em;opacity:0;animation:slideIn 0.8s 0.25s forwards}
+.hero h1 .outline{-webkit-text-stroke:1px var(--gold);color:transparent;display:block}
+.hero h1 .solid{color:var(--cream);display:block}
+.hero h1 .accent{color:var(--gold)}
+
+.hero-sub{margin-top:24px;font-size:17px;font-weight:400;color:var(--cream2);line-height:1.75;max-width:440px;opacity:0;animation:slideIn 0.8s 0.4s forwards}
+
+.hero-form{margin-top:44px;opacity:0;animation:slideIn 0.8s 0.55s forwards}
+.hf-row{display:flex;gap:0;max-width:440px}
+.hf-row input{flex:1;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-right:none;color:var(--cream);font-family:'DM Sans', sans-serif;font-size:15px;padding:15px 20px;border-radius:4px 0 0 4px;outline:none;transition:border-color 0.2s}
+.hf-row input::placeholder{color:var(--muted)}
+.hf-row input:focus{border-color:var(--gold);background:rgba(240,165,0,0.04)}
+.hf-row button{background:var(--gold);border:none;color:var(--bg);font-family:'Playfair Display',sans-serif;font-size:14px;font-weight:700;padding:15px 26px;border-radius:0 4px 4px 0;cursor:pointer;white-space:nowrap;letter-spacing:0.02em;transition:all 0.2s}
+.hf-row button:hover{background:var(--gold2);box-shadow:0 4px 20px rgba(240,165,0,0.4)}
+.hf-note{margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--muted);letter-spacing:0.05em}
+.hf-note span{color:var(--gold)}
+
+.hero-stats{margin-top:56px;padding-top:40px;border-top:1px solid var(--border2);display:grid;grid-template-columns:repeat(3,1fr);gap:0;opacity:0;animation:slideIn 0.8s 0.7s forwards}
+.hs{padding-right:32px}
+.hs+.hs{border-left:1px solid var(--border2);padding-left:32px;padding-right:0}
+.hs-val{font-family:'Playfair Display',sans-serif;font-size:32px;font-weight:800;color:var(--gold);line-height:1}
+.hs-lbl{font-size:12px;color:var(--muted);margin-top:5px;line-height:1.5}
+
+/* HERO RIGHT — AI CALCULATOR */
+.hero-right{display:flex;align-items:center;justify-content:center;opacity:0;animation:slideIn 0.8s 0.35s forwards;position:relative}
+
+.calc-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;width:100%;max-width:480px;overflow:hidden;box-shadow:0 0 60px rgba(240,165,0,0.08),0 40px 80px rgba(0,0,0,0.6)}
+
+.calc-header{background:var(--surface2);border-bottom:1px solid var(--border2);padding:16px 24px;display:flex;align-items:center;justify-content:space-between}
+.calc-dots{display:flex;gap:7px}
+.calc-dot{width:9px;height:9px;border-radius:50%}
+.cd-r{background:#e03e3e}.cd-y{background:#f0a500}.cd-g{background:#1db87a}
+.calc-title{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.08em}
+.calc-ai-badge{display:flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--purple);background:rgba(124,92,191,0.1);border:1px solid rgba(124,92,191,0.2);padding:4px 10px;border-radius:100px}
+.ai-pulse{width:6px;height:6px;background:var(--purple);border-radius:50%;animation:blink 1.5s ease-in-out infinite}
+
+.calc-body{padding:28px 24px}
+
+.calc-label{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;display:block}
+
+.calc-input-row{margin-bottom:18px}
+.calc-input{width:100%;background:rgba(255,255,255,0.03);border:1px solid var(--border2);color:var(--cream);font-family:'DM Sans', sans-serif;font-size:15px;font-weight:500;padding:12px 16px;border-radius:6px;outline:none;transition:all 0.2s}
+.calc-input:focus{border-color:var(--gold);background:rgba(240,165,0,0.04);box-shadow:0 0 0 3px rgba(240,165,0,0.08)}
+
+.calc-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px}
+
+.calc-btn{width:100%;background:linear-gradient(135deg,var(--gold),var(--saffron));border:none;color:var(--bg);font-family:'Playfair Display',sans-serif;font-size:14px;font-weight:700;padding:14px;border-radius:6px;cursor:pointer;letter-spacing:0.03em;transition:all 0.3s;position:relative;overflow:hidden;margin-top:4px}
+.calc-btn::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,var(--gold2),var(--gold));opacity:0;transition:opacity 0.3s}
+.calc-btn:hover::before{opacity:1}
+.calc-btn span{position:relative;z-index:1}
+
+/* RESULT PANEL */
+.calc-result{margin-top:20px;border:1px solid var(--border2);border-radius:8px;overflow:hidden;display:none}
+.calc-result.visible{display:block}
+.cr-thinking{padding:20px 20px;display:flex;align-items:center;gap:12px}
+.thinking-dots{display:flex;gap:5px}
+.td{width:7px;height:7px;background:var(--purple);border-radius:50%;animation:tdpulse 1.2s ease-in-out infinite}
+.td:nth-child(2){animation-delay:0.2s}
+.td:nth-child(3){animation-delay:0.4s}
+@keyframes tdpulse{0%,100%{opacity:0.2;transform:scale(0.8)}50%{opacity:1;transform:scale(1)}}
+.thinking-text{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.06em}
+
+.cr-content{display:none;padding:0}
+.cr-top{background:rgba(240,165,0,0.06);border-bottom:1px solid var(--border2);padding:20px}
+.cr-loss-label{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.cr-loss-val{font-family:'Playfair Display',sans-serif;font-size:38px;font-weight:800;color:var(--saffron);line-height:1;letter-spacing:-0.02em}
+.cr-loss-period{font-size:12px;color:var(--muted);margin-top:4px}
+
+.cr-breakdown{padding:16px 20px;display:grid;grid-template-columns:1fr 1fr;gap:10px;border-bottom:1px solid var(--border2)}
+.crb-item{}
+.crb-lbl{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+.crb-val{font-family:'Playfair Display',sans-serif;font-size:16px;font-weight:700;color:var(--cream)}
+.crb-val.bad{color:var(--red)}
+.crb-val.good{color:var(--green)}
+
+.cr-insight{padding:16px 20px}
+.cr-insight-text{font-size:13px;color:var(--cream2);line-height:1.65;opacity:0.8}
+.cr-insight-text strong{color:var(--gold);opacity:1}
+
+.cr-cta{margin:0 20px 20px;background:var(--gold);color:var(--bg);border:none;width:calc(100% - 0px);padding:12px;border-radius:6px;font-family:'Playfair Display',sans-serif;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:0.02em;transition:all 0.2s}
+.cr-cta:hover{background:var(--gold2)}
+
+/* TICKER */
+.ticker{background:var(--surface);border-top:1px solid var(--border2);border-bottom:1px solid var(--border2);padding:14px 0;overflow:hidden;white-space:nowrap;position:relative;z-index:1}
+.ticker-inner{display:inline-flex;animation:ticker 28s linear infinite}
+.ticker-item{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);padding:0 32px}
+.ticker-item .sep{color:var(--gold);margin-right:8px}
+@keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* SECTIONS */
+section{position:relative;z-index:1}
+.s-pad{padding:100px 56px}
+
+.eyebrow{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:20px;display:flex;align-items:center;gap:10px}
+.eyebrow::before{content:'';display:block;width:20px;height:1px;background:var(--gold);opacity:0.6}
+
+h2.display{font-family:'Playfair Display',sans-serif;font-size:clamp(30px,3.5vw,50px);font-weight:800;line-height:1.1;letter-spacing:-0.03em}
+h2.display em{font-style:normal;color:var(--gold)}
+
+/* PROBLEM */
+.problem{background:var(--bg2)}
+.problem-grid{margin-top:64px;display:grid;grid-template-columns:1fr 1fr;gap:2px}
+.pc{background:var(--surface);border:1px solid var(--border2);padding:44px 40px;position:relative;overflow:hidden;transition:border-color 0.3s,transform 0.3s}
+.pc:hover{border-color:var(--border);transform:translateY(-2px)}
+.pc::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:0;transition:opacity 0.3s}
+.pc:hover::after{opacity:0.6}
+.pc-num{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.1em;color:var(--muted);margin-bottom:20px}
+.pc h3{font-family:'Playfair Display',sans-serif;font-size:21px;font-weight:700;color:var(--cream);margin-bottom:12px;line-height:1.25}
+.pc p{font-size:14.5px;color:var(--cream2);opacity:0.6;line-height:1.75}
+.pc-pill{display:inline-block;margin-top:20px;font-family:'Playfair Display',sans-serif;font-size:26px;font-weight:800;color:var(--saffron)}
+.pc-wide{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:40px}
+.pc-code{display:flex;align-items:center}
+.code-block{width:100%;background:rgba(240,165,0,0.04);border:1px solid var(--border2);border-radius:6px;padding:22px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:2;color:var(--muted)}
+.code-block .kw{color:var(--gold)}
+.code-block .val{color:var(--cream)}
+.code-block .bad{color:var(--saffron)}
+.code-block .ok{color:var(--green)}
+
+/* HOW */
+.how{background:var(--bg)}
+.steps{margin-top:72px;display:grid;grid-template-columns:repeat(3,1fr);gap:2px;position:relative}
+.steps::before{content:'';position:absolute;top:44px;left:calc(33.33% - 1px);right:calc(33.33% - 1px);height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:0.25}
+.step{background:var(--surface);border:1px solid var(--border2);padding:36px 32px 44px;transition:border-color 0.25s}
+.step:hover{border-color:var(--border)}
+.step-num{width:38px;height:38px;border:1px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--gold);margin-bottom:24px;background:rgba(240,165,0,0.05)}
+.step h3{font-family:'Playfair Display',sans-serif;font-size:19px;font-weight:700;color:var(--cream);margin-bottom:10px;line-height:1.25}
+.step p{font-size:14px;color:var(--cream2);opacity:0.6;line-height:1.7}
+.step-time{margin-top:20px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);opacity:0.6}
+
+/* PRODUCT */
+.product{background:var(--bg2)}
+.product-ui{margin-top:64px;border:1px solid var(--border);border-radius:10px;overflow:hidden;background:var(--surface);max-width:920px;box-shadow:0 0 80px rgba(240,165,0,0.06)}
+.ui-topbar{background:var(--surface2);border-bottom:1px solid var(--border2);padding:0 24px;height:48px;display:flex;align-items:center;justify-content:space-between}
+.ui-dots{display:flex;gap:7px}
+.ui-dot{width:9px;height:9px;border-radius:50%}
+.ui-dot-r{background:#e03e3e}.ui-dot-y{background:#f0a500}.ui-dot-g{background:#1db87a}
+.ui-title{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.08em}
+.ui-badge{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--green);background:rgba(29,184,122,0.1);border:1px solid rgba(29,184,122,0.2);padding:3px 10px;border-radius:100px}
+.ui-order{padding:16px 24px;border-bottom:1px solid var(--border2);display:flex;align-items:center;gap:16px;background:rgba(240,165,0,0.03)}
+.ui-risk{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;padding:4px 10px;border-radius:2px;background:rgba(224,62,62,0.12);color:#f06060;border:1px solid rgba(224,62,62,0.2);white-space:nowrap}
+.ui-order-detail{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--cream2);opacity:0.7;flex:1}
+.ui-order-detail strong{color:var(--cream);opacity:1}
+.ui-reason{font-size:12px;color:var(--muted);max-width:220px;line-height:1.4}
+.ui-decisions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:var(--border2)}
+.ui-dec{background:var(--surface);padding:26px 22px;position:relative}
+.ui-dec.rec{background:rgba(240,165,0,0.05);border-top:2px solid var(--gold)}
+.rec-label{position:absolute;top:0;left:50%;transform:translate(-50%,-50%);background:var(--gold);color:var(--bg);font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;padding:3px 12px;border-radius:100px;white-space:nowrap;font-weight:500}
+.dec-action{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:0.14em;text-transform:uppercase;margin-bottom:12px}
+.dec-action.block{color:var(--red)}.dec-action.nudge{color:var(--gold)}.dec-action.ship{color:var(--green)}
+.dec-amount{font-family:'Playfair Display',sans-serif;font-size:28px;font-weight:800;line-height:1;color:var(--cream)}
+.dec-desc{margin-top:8px;font-size:11.5px;color:var(--muted);line-height:1.55}
+.dec-btn{margin-top:18px;display:block;text-align:center;padding:8px;font-family:'Playfair Display',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.04em;border-radius:3px;cursor:pointer;border:1px solid var(--border);color:var(--cream2);background:transparent;transition:all 0.2s;width:100%}
+.dec-btn:hover{border-color:var(--gold);color:var(--gold)}
+.ui-dec.rec .dec-btn{background:var(--gold);border-color:var(--gold);color:var(--bg)}
+.ui-dec.rec .dec-btn:hover{background:var(--gold2);border-color:var(--gold2)}
+
+/* FEATURES */
+.features{background:var(--bg)}
+.feat-grid{margin-top:64px;display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--border2);border-left:1px solid var(--border2)}
+.feat{border-right:1px solid var(--border2);border-bottom:1px solid var(--border2);padding:32px 26px;transition:background 0.2s;position:relative;overflow:hidden}
+.feat:hover{background:var(--surface)}
+.feat-icon{font-family:'JetBrains Mono',monospace;font-size:18px;color:var(--gold);margin-bottom:18px;line-height:1}
+.feat h3{font-family:'Playfair Display',sans-serif;font-size:15px;font-weight:700;color:var(--cream);margin-bottom:8px;line-height:1.3}
+.feat p{font-size:13px;color:var(--muted);line-height:1.65}
+
+/* AUDIT */
+.audit{background:var(--bg2)}
+.audit-grid{margin-top:64px;display:grid;grid-template-columns:repeat(3,1fr);gap:2px}
+.audit-card{background:var(--surface);border:1px solid var(--border2);padding:38px 34px;position:relative;overflow:hidden;transition:border-color 0.25s}
+.audit-card:hover{border-color:var(--border)}
+.audit-card::before{content:'';position:absolute;top:0;left:34px;right:34px;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:0.35}
+.audit-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}
+.audit-icon{font-family:'JetBrains Mono',monospace;font-size:20px;color:var(--gold)}
+.audit-finding{font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted)}
+.audit-card h3{font-family:'Playfair Display',sans-serif;font-size:19px;font-weight:700;color:var(--cream);margin-bottom:12px;line-height:1.25}
+.audit-card p{font-size:14px;font-weight:300;color:var(--cream2);opacity:0.6;line-height:1.75;margin-bottom:26px}
+.audit-out{border-top:1px solid var(--border2);padding-top:16px}
+.ao-lbl{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:4px}
+.ao-val{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--gold);letter-spacing:0.04em}
+
+.audit-footer{margin-top:44px;display:flex;align-items:center;gap:24px}
+.af-line{flex:1;height:1px;background:var(--border2)}
+.af-text{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.08em;color:var(--muted);white-space:nowrap}
+
+/* WAITLIST */
+.waitlist-section{background:var(--bg);padding:120px 56px;text-align:center;position:relative;overflow:hidden}
+.waitlist-section::before{content:'';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:700px;height:700px;border-radius:50%;background:radial-gradient(circle,rgba(240,165,0,0.04) 0%,transparent 70%);pointer-events:none}
+.waitlist-section h2{font-family:'Playfair Display',sans-serif;font-size:clamp(34px,4.5vw,60px);font-weight:900;line-height:1.06;letter-spacing:-0.04em;max-width:640px;margin:0 auto 14px}
+.waitlist-section h2 em{font-style:normal;color:var(--gold)}
+.waitlist-section>p{font-size:17px;color:var(--cream2);opacity:0.55;max-width:400px;margin:0 auto 48px}
+.wl-center{max-width:440px;margin:0 auto}
+.wl-form{display:flex;gap:0}
+.wl-form input{flex:1;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-right:none;color:var(--cream);font-family:'DM Sans', sans-serif;font-size:15px;padding:15px 20px;border-radius:4px 0 0 4px;outline:none;transition:border-color 0.2s}
+.wl-form input::placeholder{color:var(--muted)}
+.wl-form input:focus{border-color:var(--gold)}
+.wl-form button{background:var(--gold);border:none;color:var(--bg);font-family:'Playfair Display',sans-serif;font-size:14px;font-weight:700;padding:15px 24px;border-radius:0 4px 4px 0;cursor:pointer;white-space:nowrap;letter-spacing:0.02em;transition:all 0.2s}
+.wl-form button:hover{background:var(--gold2)}
+.wl-note{margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--muted);letter-spacing:0.05em;text-align:center}
+.wl-note span{color:var(--gold)}
+.wl-counter{margin-top:24px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:0.06em}
+.wl-counter strong{color:var(--gold)}
+
+/* FOOTER */
+footer{background:var(--surface);border-top:1px solid var(--border2);padding:44px 56px;display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1}
+.footer-brand{font-family:'Playfair Display',sans-serif;font-size:15px;font-weight:700;color:var(--cream);letter-spacing:0.03em;margin-bottom:6px}
+.footer-brand span{color:var(--gold)}
+.footer-copy{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--muted);letter-spacing:0.05em}
+.footer-right{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);text-align:right;line-height:1.9;letter-spacing:0.04em}
+
+/* ANIMATIONS */
+@keyframes slideIn{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+.reveal{opacity:0;transform:translateY(16px);transition:opacity 0.6s ease,transform 0.6s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+.reveal.d1{transition-delay:0.1s}.reveal.d2{transition-delay:0.2s}.reveal.d3{transition-delay:0.3s}
+
+@media(max-width:1024px){
+  .hero{grid-template-columns:1fr;padding-top:120px}
+  .hero-right{margin-top:48px}
+  .calc-card{max-width:100%}
+}
+@media(max-width:768px){
+  nav{padding:0 20px}
+  .nav-center{display:none}
+  .hero,.s-pad,.waitlist-section{padding-left:20px;padding-right:20px}
+  .hero h1{font-size:40px}
+  .hero-stats{grid-template-columns:1fr 1fr;gap:20px}
+  .hs+.hs:last-child{border-left:none;padding-left:0;grid-column:1/-1}
+  .problem-grid,.steps,.audit-grid{grid-template-columns:1fr}
+  .pc-wide{grid-template-columns:1fr}
+  .feat-grid{grid-template-columns:1fr 1fr}
+  .ui-decisions{grid-template-columns:1fr}
+  footer{flex-direction:column;gap:20px;text-align:center}
+  .footer-right{text-align:center}
+  .audit-footer{flex-direction:column;gap:10px}
+  .af-line{width:100%}
+  .calc-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+<canvas id="bg-canvas"></canvas>
+
+<nav>
+  <a href="#" class="logo">
+    <svg class="logo-prism" viewBox="0 0 32 32" fill="none">
+      <polygon points="16,2 30,26 2,26" fill="none" stroke="#f0a500" stroke-width="1.5"/>
+      <polygon points="16,9 23,22 9,22" fill="rgba(240,165,0,0.12)" stroke="#f0a500" stroke-width="0.75"/>
+      <line x1="16" y1="2" x2="16" y2="26" stroke="#f0a500" stroke-width="0.5" opacity="0.35"/>
+      <line x1="2" y1="26" x2="30" y2="26" stroke="#f0a500" stroke-width="0.5" opacity="0.35"/>
+      <line x1="2" y1="26" x2="23" y2="13" stroke="#f0a500" stroke-width="0.5" opacity="0.35"/>
+    </svg>
+    <span class="logo-name">claivo<span>.in</span></span>
+  </a>
+  <div class="nav-center">
+    <div class="nav-dot"></div>
+    <span class="nav-status">Prism · Early access · Pre-launch</span>
+  </div>
+  <a href="#waitlist" class="nav-cta">Join waitlist →</a>
+</nav>
+
+<section class="hero">
+  <div class="hero-left">
+    <div class="hero-eyebrow">
+      <span style="width:6px;height:6px;background:var(--saffron);border-radius:50%;animation:blink 2s infinite"></span>
+      Prism by Claivo · Pre-launch
+    </div>
+    <h1>
+      <span class="outline">RTO is bleeding</span>
+      <span class="solid">your brand. <span class="accent">See</span></span>
+      <span class="solid"><span class="accent">exactly how much.</span></span>
+    </h1>
+    <p class="hero-sub">The RTO decision engine for Indian D2C brands. Not a risk score — the exact rupee impact of every return, before it happens.</p>
+
+    <div class="hero-form">
+      <div class="hf-row">
+        <input type="email" placeholder="your@store.com" id="hero-email">
+        <button onclick="handleWaitlist('hero-email')">Get free audit →</button>
+      </div>
+      <p class="hf-note"><span>Free 90-day audit</span> for first 100 brands · No credit card · 48hr delivery</p>
+    </div>
+
+    <div class="hero-stats">
+      <div class="hs">
+        <div class="hs-val">₹8,000Cr</div>
+        <div class="hs-lbl">Annual D2C RTO<br>loss in India</div>
+      </div>
+      <div class="hs">
+        <div class="hs-val">2.8×</div>
+        <div class="hs-lbl">True cost vs what<br>brands think</div>
+      </div>
+      <div class="hs">
+        <div class="hs-val">25%</div>
+        <div class="hs-lbl">Avg COD RTO<br>Tier 2/3 cities</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-right">
+    <div class="calc-card">
+      <div class="calc-header">
+        <div class="calc-dots">
+          <div class="calc-dot cd-r"></div>
+          <div class="calc-dot cd-y"></div>
+          <div class="calc-dot cd-g"></div>
+        </div>
+        <span class="calc-title">RTO Cost Calculator</span>
+        <div class="calc-ai-badge"><div class="ai-pulse"></div>AI powered</div>
+      </div>
+      <div class="calc-body">
+        <div class="calc-input-row">
+          <label class="calc-label">Monthly orders (approx)</label>
+          <input class="calc-input" type="number" id="c-orders" placeholder="e.g. 500" min="1">
+        </div>
+        <div class="calc-grid">
+          <div>
+            <label class="calc-label">Avg order value (₹)</label>
+            <input class="calc-input" type="number" id="c-aov" placeholder="e.g. 899" min="1">
+          </div>
+          <div>
+            <label class="calc-label">COD % of orders</label>
+            <input class="calc-input" type="number" id="c-cod" placeholder="e.g. 65" min="0" max="100">
+          </div>
+        </div>
+        <div class="calc-input-row">
+          <label class="calc-label">Your product category</label>
+          <input class="calc-input" type="text" id="c-cat" placeholder="e.g. Fashion, Beauty, Electronics">
+        </div>
+        <button class="calc-btn" onclick="runCalculator()"><span>⚡ Calculate my RTO loss</span></button>
+
+        <div class="calc-result" id="calc-result">
+          <div class="cr-thinking" id="cr-thinking">
+            <div class="thinking-dots"><div class="td"></div><div class="td"></div><div class="td"></div></div>
+            <span class="thinking-text">Prism AI is analysing your numbers...</span>
+          </div>
+          <div class="cr-content" id="cr-content">
+            <div class="cr-top">
+              <div class="cr-loss-label">Estimated monthly RTO loss</div>
+              <div class="cr-loss-val" id="cr-loss-val">—</div>
+              <div class="cr-loss-period">Based on your inputs · True cost incl. all components</div>
+            </div>
+            <div class="cr-breakdown">
+              <div class="crb-item">
+                <div class="crb-lbl">RTO orders/month</div>
+                <div class="crb-val bad" id="cr-rto-orders">—</div>
+              </div>
+              <div class="crb-item">
+                <div class="crb-lbl">Cost per RTO</div>
+                <div class="crb-val bad" id="cr-cost-per">—</div>
+              </div>
+              <div class="crb-item">
+                <div class="crb-lbl">Recoverable with Prism</div>
+                <div class="crb-val good" id="cr-recoverable">—</div>
+              </div>
+              <div class="crb-item">
+                <div class="crb-lbl">Annual impact</div>
+                <div class="crb-val bad" id="cr-annual">—</div>
+              </div>
+            </div>
+            <div class="cr-insight">
+              <p class="cr-insight-text" id="cr-insight-text">—</p>
+            </div>
+            <button class="cr-cta" onclick="scrollToWaitlist()">Get my full free audit →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="ticker">
+  <div class="ticker-inner">
+    <span class="ticker-item"><span class="sep">◆</span>Real-time risk scoring</span>
+    <span class="ticker-item"><span class="sep">◆</span>Prism simulator</span>
+    <span class="ticker-item"><span class="sep">◆</span>True cost-per-RTO</span>
+    <span class="ticker-item"><span class="sep">◆</span>Pincode intelligence</span>
+    <span class="ticker-item"><span class="sep">◆</span>P&L in rupees</span>
+    <span class="ticker-item"><span class="sep">◆</span>One-click rule deploy</span>
+    <span class="ticker-item"><span class="sep">◆</span>Shopify + WooCommerce</span>
+    <span class="ticker-item"><span class="sep">◆</span>Campaign-aware scoring</span>
+    <span class="ticker-item"><span class="sep">◆</span>SKU-level analytics</span>
+    <span class="ticker-item"><span class="sep">◆</span>Real-time risk scoring</span>
+    <span class="ticker-item"><span class="sep">◆</span>Prism simulator</span>
+    <span class="ticker-item"><span class="sep">◆</span>True cost-per-RTO</span>
+    <span class="ticker-item"><span class="sep">◆</span>Pincode intelligence</span>
+    <span class="ticker-item"><span class="sep">◆</span>P&L in rupees</span>
+    <span class="ticker-item"><span class="sep">◆</span>One-click rule deploy</span>
+    <span class="ticker-item"><span class="sep">◆</span>Shopify + WooCommerce</span>
+    <span class="ticker-item"><span class="sep">◆</span>Campaign-aware scoring</span>
+    <span class="ticker-item"><span class="sep">◆</span>SKU-level analytics</span>
+  </div>
+</div>
+
+<section class="problem s-pad">
+  <p class="eyebrow reveal">The problem</p>
+  <h2 class="display reveal">Every tool gives you a score.<br>Nobody tells you <em>what it costs.</em></h2>
+  <div class="problem-grid">
+    <div class="pc reveal d1">
+      <div class="pc-num">01 / 03</div>
+      <h3>Your true cost is hidden</h3>
+      <p>Most brands count only the reverse shipping charge. Add forward shipping, COD handling, repackaging, restocking, and working capital locked in transit.</p>
+      <div class="pc-pill">2.8× more</div>
+    </div>
+    <div class="pc reveal d2">
+      <div class="pc-num">02 / 03</div>
+      <h3>Scores with no decision</h3>
+      <p>A risk score of 0.65 means nothing without context. Should you block? Nudge to prepaid? Ship anyway? Without the rupee consequence of each choice, the score is noise.</p>
+    </div>
+    <div class="pc pc-wide reveal d1">
+      <div>
+        <div class="pc-num">03 / 03</div>
+        <h3>No experiments before committing</h3>
+        <p>Thinking of disabling COD above ₹1,500? Or blocking pincodes before Diwali? Right now you either run it blind — or don't run it at all. There's no way to model the outcome first.</p>
+      </div>
+      <div class="pc-code">
+        <div class="code-block">
+          <span class="kw">IF</span> COD disabled above ₹1,500<br>
+          <span class="kw">THEN</span> <span class="val">GMV impact = ?</span><br>
+          <span class="kw">AND</span> <span class="val">RTO savings = ?</span><br>
+          <span class="kw">NET</span> P&amp;L delta = <span class="bad">unknown</span><br><br>
+          <span class="ok">// With Prism: know before you deploy</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="how s-pad">
+  <p class="eyebrow reveal">How Prism works</p>
+  <h2 class="display reveal">Three steps from<br><em>confusion to clarity</em></h2>
+  <div class="steps">
+    <div class="step reveal d1">
+      <div class="step-num">01</div>
+      <h3>Connect your store</h3>
+      <p>Shopify or WooCommerce. Prism pulls 90 days of order history and maps your real unit economics into a true cost-per-RTO.</p>
+      <div class="step-time">↳ 5 min setup</div>
+    </div>
+    <div class="step reveal d2">
+      <div class="step-num">02</div>
+      <h3>See what every RTO costs</h3>
+      <p>Your RTO audit — total loss in rupees, top loss pincodes, which SKUs are killing margins, and three specific fixes with projected savings.</p>
+      <div class="step-time">↳ 48 hr delivery</div>
+    </div>
+    <div class="step reveal d3">
+      <div class="step-num">03</div>
+      <h3>Simulate before you decide</h3>
+      <p>Model any rule change against real historical data. See projected RTO rate, GMV at risk, and net P&L delta before deploying.</p>
+      <div class="step-time">↳ Results in &lt;3 sec</div>
+    </div>
+  </div>
+</section>
+
+<section class="product s-pad">
+  <p class="eyebrow reveal">The decision layer</p>
+  <h2 class="display reveal">Not a score. A <em>recommendation</em><br>with the bill attached.</h2>
+  <div class="product-ui reveal">
+    <div class="ui-topbar">
+      <div class="ui-dots"><div class="ui-dot ui-dot-r"></div><div class="ui-dot ui-dot-y"></div><div class="ui-dot ui-dot-g"></div></div>
+      <span class="ui-title">Prism · Order feed · Live</span>
+      <span class="ui-badge">● Connected</span>
+    </div>
+    <div class="ui-order">
+      <span class="ui-risk">High risk</span>
+      <span class="ui-order-detail"><strong>Order #48291</strong> &nbsp;·&nbsp; ₹1,840 COD &nbsp;·&nbsp; Patna, Bihar &nbsp;·&nbsp; via Instagram Reels</span>
+      <span class="ui-reason">Pincode returns 48% of orders. First-time buyer.</span>
+    </div>
+    <div class="ui-decisions">
+      <div class="ui-dec">
+        <div class="dec-action block">Block COD</div>
+        <div class="dec-amount">₹0</div>
+        <div class="dec-desc">No GMV, no loss. Pincode RTO rate: 48%. Saves ₹4,140 in true RTO cost.</div>
+        <button class="dec-btn">Apply</button>
+      </div>
+      <div class="ui-dec rec">
+        <div class="rec-label">Recommended</div>
+        <div class="dec-action nudge">Nudge to prepaid</div>
+        <div class="dec-amount">+₹920</div>
+        <div class="dec-desc">Expected value after nudge. Offer ₹49 prepaid discount. Converts ~38% of similar orders.</div>
+        <button class="dec-btn">Apply</button>
+      </div>
+      <div class="ui-dec">
+        <div class="dec-action ship">Ship as COD</div>
+        <div class="dec-amount">−₹2,190</div>
+        <div class="dec-desc">Expected loss. Probability-weighted RTO cost at 48% risk on this order.</div>
+        <button class="dec-btn">Apply</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="features s-pad">
+  <p class="eyebrow reveal">What's inside</p>
+  <h2 class="display reveal">Built for founders who<br>optimize for <em>profit, not metrics</em></h2>
+  <div class="feat-grid reveal">
+    <div class="feat">
+      <div class="feat-icon">₹</div>
+      <h3>True cost calculator</h3>
+      <p>Sets up in 5 min. Real cost-per-RTO with every component line-itemed. Most founders are shocked.</p>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">⚡</div>
+      <h3>Real-time decisions</h3>
+      <p>Every COD order scored with a recommended action and rupee impact in under 800ms.</p>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">◎</div>
+      <h3>Prism simulator</h3>
+      <p>Model rule changes against 90 days of history. See net P&L delta before deploying anything.</p>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">↗</div>
+      <h3>Free RTO audit</h3>
+      <p>Connect your store. In 48 hours, know exactly how much you lost and what three actions fix it.</p>
+    </div>
+  </div>
+</section>
+
+<section class="audit s-pad">
+  <p class="eyebrow reveal">Your free audit</p>
+  <h2 class="display reveal">Connect your store.<br>In 48 hours, you'll know <em>exactly this.</em></h2>
+  <p class="reveal" style="margin-top:14px;font-size:15px;color:var(--cream2);opacity:0.5;max-width:440px;line-height:1.7">No estimates. No benchmarks. Your actual numbers, from your actual orders.</p>
+  <div class="audit-grid">
+    <div class="audit-card reveal d1">
+      <div class="audit-row">
+        <div class="audit-icon">₹</div>
+        <div class="audit-finding">Finding 01</div>
+      </div>
+      <h3>Your true cost per RTO</h3>
+      <p>Every rupee — forward freight, COD handling, repackaging, restocking labour, and working capital locked in transit. Most founders see this and go quiet.</p>
+      <div class="audit-out">
+        <span class="ao-lbl">You'll receive</span>
+        <span class="ao-val">Exact ₹ cost · Per SKU · Per channel</span>
+      </div>
+    </div>
+    <div class="audit-card reveal d2">
+      <div class="audit-row">
+        <div class="audit-icon">◎</div>
+        <div class="audit-finding">Finding 02</div>
+      </div>
+      <h3>Your top 10 loss pincodes</h3>
+      <p>Ranked by total rupee loss, not just RTO rate. A 60% RTO on ₹200 orders hurts less than 30% on ₹2,000 COD. You'll finally see the difference.</p>
+      <div class="audit-out">
+        <span class="ao-lbl">You'll receive</span>
+        <span class="ao-val">Ranked pincode map · Loss per pincode</span>
+      </div>
+    </div>
+    <div class="audit-card reveal d3">
+      <div class="audit-row">
+        <div class="audit-icon">↗</div>
+        <div class="audit-finding">Finding 03</div>
+      </div>
+      <h3>Three actions. With projected savings.</h3>
+      <p>Specific rule changes modelled against your last 90 days. Each with an estimated monthly saving in rupees. Not generic advice — your numbers.</p>
+      <div class="audit-out">
+        <span class="ao-lbl">You'll receive</span>
+        <span class="ao-val">3 recommendations · ₹ impact each</span>
+      </div>
+    </div>
+  </div>
+  <div class="audit-footer reveal">
+    <div class="af-line"></div>
+    <span class="af-text">Free for first 100 brands · Delivered in 48 hours · No credit card</span>
+    <div class="af-line"></div>
+  </div>
+</section>
+
+<section class="waitlist-section" id="waitlist">
+  <p class="eyebrow reveal" style="justify-content:center">Early access</p>
+  <h2 class="reveal">Know what your RTO<br>is <em>actually costing you.</em></h2>
+  <p class="reveal">Connect your store. Get your free 90-day audit in 48 hours. First 100 brands get lifetime early-access pricing.</p>
+  <div class="wl-center reveal">
+    <div class="wl-form">
+      <input type="email" placeholder="your@store.com" id="wl-email">
+      <button onclick="handleWaitlist('wl-email')">Join waitlist →</button>
+    </div>
+    <p class="wl-note"><span>Free audit</span> · Works with Shopify & WooCommerce · No credit card</p>
+    <p class="wl-counter" id="counter">Already <strong>47 brands</strong> on the waitlist</p>
+  </div>
+</section>
+
+<footer>
+  <div>
+    <div class="footer-brand">claivo<span>.in</span> &nbsp;·&nbsp; Prism</div>
+    <div class="footer-copy">© 2026 Claivo · The intelligence layer behind commerce · Built in India</div>
+  </div>
+  <div class="footer-right">claivo.in<br>hello@claivo.in<br>For Indian D2C brands</div>
+</footer>
+
+<script>
+// CURSOR
+const cursor = document.getElementById('cursor');
+const ring = document.getElementById('cursor-ring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cursor.style.left=mx+'px';cursor.style.top=my+'px'});
+function animRing(){rx+=(mx-rx)*0.12;ry+=(my-ry)*0.12;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(animRing)}
+animRing();
+document.querySelectorAll('a,button,.feat,.pc,.audit-card,.step').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{cursor.style.width='14px';cursor.style.height='14px';ring.style.width='48px';ring.style.height='48px';ring.style.borderColor='rgba(240,165,0,0.8)'});
+  el.addEventListener('mouseleave',()=>{cursor.style.width='8px';cursor.style.height='8px';ring.style.width='32px';ring.style.height='32px';ring.style.borderColor='rgba(240,165,0,0.5)'});
+});
+
+// CANVAS PARTICLE FIELD
+const canvas=document.getElementById('bg-canvas');
+const ctx=canvas.getContext('2d');
+let W,H,particles=[];
+function resize(){W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight}
+resize();window.addEventListener('resize',resize);
+
+class Particle{
+  constructor(){this.reset()}
+  reset(){this.x=Math.random()*W;this.y=Math.random()*H;this.vx=(Math.random()-0.5)*0.3;this.vy=(Math.random()-0.5)*0.3;this.r=Math.random()*1.5+0.3;this.a=Math.random()*0.4+0.1;this.gold=Math.random()>0.7}
+  update(){this.x+=this.vx;this.y+=this.vy;if(this.x<0||this.x>W||this.y<0||this.y>H)this.reset()}
+  draw(){ctx.beginPath();ctx.arc(this.x,this.y,this.r,0,Math.PI*2);ctx.fillStyle=this.gold?`rgba(240,165,0,${this.a})`:`rgba(124,92,191,${this.a*0.5})`;ctx.fill()}
+}
+
+for(let i=0;i<120;i++)particles.push(new Particle());
+
+function drawConnections(){
+  for(let i=0;i<particles.length;i++){
+    for(let j=i+1;j<particles.length;j++){
+      const dx=particles[i].x-particles[j].x,dy=particles[i].y-particles[j].y;
+      const d=Math.sqrt(dx*dx+dy*dy);
+      if(d<100){ctx.beginPath();ctx.moveTo(particles[i].x,particles[i].y);ctx.lineTo(particles[j].x,particles[j].y);ctx.strokeStyle=`rgba(240,165,0,${0.04*(1-d/100)})`;ctx.lineWidth=0.5;ctx.stroke()}
+    }
+  }
+}
+
+function animCanvas(){
+  ctx.clearRect(0,0,W,H);
+  drawConnections();
+  particles.forEach(p=>{p.update();p.draw()});
+  requestAnimationFrame(animCanvas);
+}
+animCanvas();
+
+// SCROLL REVEAL
+const observer=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')});
+},{threshold:0.08,rootMargin:'0px 0px -30px 0px'});
+document.querySelectorAll('.reveal').forEach(el=>observer.observe(el));
+
+// WAITLIST
+function handleWaitlist(id){
+  const inp=document.getElementById(id);
+  const email=inp.value.trim();
+  if(!email||!email.includes('@')){inp.style.borderColor='#e03e3e';setTimeout(()=>inp.style.borderColor='',1500);return}
+  const btn=inp.nextElementSibling;
+  btn.textContent='✓ You\'re in';
+  btn.style.background='#1db87a';
+  inp.value='';inp.placeholder='We\'ll be in touch';inp.disabled=true;
+  const c=document.getElementById('counter');
+  if(c)c.innerHTML='Already <strong>48 brands</strong> on the waitlist';
+}
+
+document.querySelectorAll('input[type=email]').forEach(inp=>{
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter')inp.nextElementSibling.click()});
+});
+
+function scrollToWaitlist(){document.getElementById('waitlist').scrollIntoView({behavior:'smooth'})}
+
+// AI CALCULATOR
+async function runCalculator(){
+  const orders=parseInt(document.getElementById('c-orders').value);
+  const aov=parseInt(document.getElementById('c-aov').value);
+  const cod=parseInt(document.getElementById('c-cod').value);
+  const cat=document.getElementById('c-cat').value.trim();
+
+  if(!orders||!aov||!cod){
+    alert('Please fill in all fields');return;
+  }
+
+  const resultEl=document.getElementById('calc-result');
+  const thinkingEl=document.getElementById('cr-thinking');
+  const contentEl=document.getElementById('cr-content');
+
+  resultEl.classList.add('visible');
+  thinkingEl.style.display='flex';
+  contentEl.style.display='none';
+
+  // Call Claude API
+  try{
+    const prompt=`You are Prism, an RTO (Return to Origin) cost analysis engine for Indian D2C brands.
+
+A brand has shared these inputs:
+- Monthly orders: ${orders}
+- Average order value: ₹${aov}
+- COD percentage: ${cod}%
+- Product category: ${cat||'General'}
+
+Calculate their RTO impact using these assumptions:
+- Industry average RTO rate for COD in India: 20-28% (use 24% as baseline, adjust slightly for category if relevant)
+- True cost per RTO = forward shipping (₹60-100) + reverse shipping (₹80-120) + COD handling fee (1.5-2% of order) + repackaging (₹30-60) + restocking time (₹40-80) + working capital cost (2% of order value for 15 days locked)
+- Prism can typically recover 35-45% of this loss through smart interventions
+
+Respond ONLY with a JSON object, no markdown, no extra text:
+{
+  "monthly_loss": "₹X,XX,XXX",
+  "rto_orders_per_month": "XXX",
+  "cost_per_rto": "₹X,XXX",
+  "recoverable_per_month": "₹XX,XXX",
+  "annual_impact": "₹XX,XX,XXX",
+  "insight": "2-3 sentence specific insight about their situation mentioning their category if provided, their biggest leak, and one specific action. Use rupee numbers. Sound like a sharp analyst, not a chatbot."
+}`;
+
+    const response=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1000,
+        messages:[{role:'user',content:prompt}]
+      })
+    });
+
+    const data=await response.json();
+    let text=data.content.map(i=>i.text||'').join('');
+    text=text.replace(/```json|```/g,'').trim();
+    const result=JSON.parse(text);
+
+    document.getElementById('cr-loss-val').textContent=result.monthly_loss;
+    document.getElementById('cr-rto-orders').textContent=result.rto_orders_per_month+' orders';
+    document.getElementById('cr-cost-per').textContent=result.cost_per_rto;
+    document.getElementById('cr-recoverable').textContent=result.recoverable_per_month+'/mo';
+    document.getElementById('cr-annual').textContent=result.annual_impact;
+    document.getElementById('cr-insight-text').innerHTML=result.insight.replace(/₹[\d,]+/g,m=>`<strong>${m}</strong>`);
+
+    thinkingEl.style.display='none';
+    contentEl.style.display='block';
+
+  }catch(err){
+    // Fallback calculation if API fails
+    const codOrders=Math.round(orders*(cod/100));
+    const rtoRate=0.24;
+    const rtoOrders=Math.round(codOrders*rtoRate);
+    const costPerRto=Math.round(aov*0.18+280);
+    const monthlyLoss=rtoOrders*costPerRto;
+    const recoverable=Math.round(monthlyLoss*0.4);
+
+    document.getElementById('cr-loss-val').textContent='₹'+monthlyLoss.toLocaleString('en-IN');
+    document.getElementById('cr-rto-orders').textContent=rtoOrders+' orders';
+    document.getElementById('cr-cost-per').textContent='₹'+costPerRto.toLocaleString('en-IN');
+    document.getElementById('cr-recoverable').textContent='₹'+recoverable.toLocaleString('en-IN')+'/mo';
+    document.getElementById('cr-annual').textContent='₹'+(monthlyLoss*12).toLocaleString('en-IN');
+    document.getElementById('cr-insight-text').innerHTML=`At <strong>₹${aov}</strong> AOV with <strong>${cod}%</strong> COD, your biggest lever is converting high-risk COD orders to prepaid before dispatch. A ₹49 prepaid incentive on your riskiest pincodes could recover <strong>₹${recoverable.toLocaleString('en-IN')}/month</strong> without touching GMV.`;
+
+    thinkingEl.style.display='none';
+    contentEl.style.display='block';
+  }
+}
+</script>
+</body>
+</html>
